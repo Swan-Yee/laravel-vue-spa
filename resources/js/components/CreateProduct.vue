@@ -1,8 +1,10 @@
 <template>
     <div class="card">
-        <h3 class="card-header">Create</h3>
+        <h3 class="card-header">
+            {{ isEdit ? "Edit" : "Create" }}
+        </h3>
         <div class="card-body">
-            <form @submit.prevent="create">
+            <form @submit.prevent="isEdit ? update() : store()">
                 <div class="form-group">
                     <label>Name</label>
                     <input
@@ -20,7 +22,16 @@
                     />
                 </div>
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        v-if="!isEdit"
+                    >
+                        Save
+                    </button>
+                    <button type="submit" class="btn btn-success" v-else>
+                        Edit
+                    </button>
                 </div>
             </form>
         </div>
@@ -30,10 +41,13 @@
 <script>
 export default {
     name: "CreateProduct",
-    props: ["product"],
+    props: ["product", "isEdit"],
     methods: {
         create() {
             this.$emit("create");
+        },
+        update() {
+            this.$emit("update");
         },
     },
 };

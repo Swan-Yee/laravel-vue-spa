@@ -16,8 +16,18 @@
                         <td>{{ product.name }}</td>
                         <td>{{ product.price }}</td>
                         <td>
-                            <button class="btn btn-success">Edit</button>
-                            <button class="btn btn-danger">Delete</button>
+                            <button
+                                class="btn btn-success"
+                                @click="edit(product)"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                class="btn btn-danger"
+                                @click="deleteProduct(product.id)"
+                            >
+                                Delete
+                            </button>
                         </td>
                     </tr>
                 </tbody>
@@ -30,5 +40,13 @@
 export default {
     name: "ProductList",
     props: ["products"],
+    methods: {
+        edit(product) {
+            this.$emit("edit", product);
+        },
+        deleteProduct(id) {
+            this.$emit("delete", id);
+        },
+    },
 };
 </script>

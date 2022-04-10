@@ -5397,12 +5397,26 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "CreateProduct",
-  props: ["product"],
+  props: ["product", "isEdit"],
   methods: {
     create: function create() {
       this.$emit("create");
+    },
+    update: function update() {
+      this.$emit("update");
     }
   }
 });
@@ -5437,6 +5451,15 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -5450,10 +5473,12 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       product: {
+        id: "",
         name: "",
         price: ""
       },
-      products: []
+      products: [],
+      isEdit: false
     };
   },
   methods: {
@@ -5466,6 +5491,12 @@ __webpack_require__.r(__webpack_exports__);
         return console.error(error);
       });
     },
+    beforeCreate: function beforeCreate() {
+      this.isEdit = false;
+      this.product.id = "";
+      this.product.name = "";
+      this.product.price = "";
+    },
     create: function create() {
       var _this2 = this;
 
@@ -5473,6 +5504,33 @@ __webpack_require__.r(__webpack_exports__);
         _this2.view();
 
         _this2.product.name = "", _this2.product.price = "";
+      });
+    },
+    edit: function edit(product) {
+      this.isEdit = true;
+      this.product.id = product.id;
+      this.product.name = product.name;
+      this.product.price = product.price;
+    },
+    update: function update() {
+      var _this3 = this;
+
+      axios.put("http://127.0.0.1:8000/api/product/".concat(this.product.id), this.product).then(function (res) {
+        _this3.view();
+
+        _this3.product.name = "", _this3.product.price = "";
+        _this3.isEdit = false;
+      });
+    },
+    deleteProduct: function deleteProduct(id) {
+      var _this4 = this;
+
+      if (!confirm("Are u sure to delete")) {
+        return;
+      }
+
+      axios["delete"]("http://127.0.0.1:8000/api/product/".concat(id)).then(function (res) {
+        _this4.view();
       });
     }
   },
@@ -5522,9 +5580,27 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   name: "ProductList",
-  props: ["products"]
+  props: ["products"],
+  methods: {
+    edit: function edit(product) {
+      this.$emit("edit", product);
+    },
+    deleteProduct: function deleteProduct(id) {
+      this.$emit("delete", id);
+    }
+  }
 });
 
 /***/ }),
@@ -5558,8 +5634,20 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  name: "SearchComponent"
+  name: "SearchComponent",
+  props: ["isEdit"],
+  methods: {
+    create: function create() {
+      this.$emit("create");
+    }
+  }
 });
 
 /***/ }),
@@ -28388,7 +28476,9 @@ var render = function () {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "card" }, [
-    _c("h3", { staticClass: "card-header" }, [_vm._v("Create")]),
+    _c("h3", { staticClass: "card-header" }, [
+      _vm._v("\n        " + _vm._s(_vm.isEdit ? "Edit" : "Create") + "\n    "),
+    ]),
     _vm._v(" "),
     _c("div", { staticClass: "card-body" }, [
       _c(
@@ -28397,7 +28487,7 @@ var render = function () {
           on: {
             submit: function ($event) {
               $event.preventDefault()
-              return _vm.create.apply(null, arguments)
+              _vm.isEdit ? _vm.update() : _vm.store()
             },
           },
         },
@@ -28454,26 +28544,25 @@ var render = function () {
             }),
           ]),
           _vm._v(" "),
-          _vm._m(0),
+          _c("div", { staticClass: "mt-4" }, [
+            !_vm.isEdit
+              ? _c(
+                  "button",
+                  { staticClass: "btn btn-primary", attrs: { type: "submit" } },
+                  [_vm._v("\n                    Save\n                ")]
+                )
+              : _c(
+                  "button",
+                  { staticClass: "btn btn-success", attrs: { type: "submit" } },
+                  [_vm._v("\n                    Edit\n                ")]
+                ),
+          ]),
         ]
       ),
     ]),
   ])
 }
-var staticRenderFns = [
-  function () {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "mt-4" }, [
-      _c(
-        "button",
-        { staticClass: "btn btn-primary", attrs: { type: "submit" } },
-        [_vm._v("Save")]
-      ),
-    ])
-  },
-]
+var staticRenderFns = []
 render._withStripped = true
 
 
@@ -28501,15 +28590,18 @@ var render = function () {
       "div",
       { staticClass: "row" },
       [
-        _c("SearchComponent"),
+        _c("SearchComponent", {
+          attrs: { isEdit: _vm.isEdit },
+          on: { create: _vm.beforeCreate },
+        }),
         _vm._v(" "),
         _c(
           "div",
           { staticClass: "col-4" },
           [
             _c("CreateProduct", {
-              attrs: { product: _vm.product },
-              on: { create: _vm.create },
+              attrs: { product: _vm.product, isEdit: _vm.isEdit },
+              on: { create: _vm.create, update: _vm.update },
             }),
           ],
           1
@@ -28518,7 +28610,12 @@ var render = function () {
         _c(
           "div",
           { staticClass: "col-8" },
-          [_c("ProductList", { attrs: { products: _vm.products } })],
+          [
+            _c("ProductList", {
+              attrs: { products: _vm.products },
+              on: { edit: _vm.edit, delete: _vm.deleteProduct },
+            }),
+          ],
           1
         ),
       ],
@@ -28564,7 +28661,41 @@ var render = function () {
               _vm._v(" "),
               _c("td", [_vm._v(_vm._s(product.price))]),
               _vm._v(" "),
-              _vm._m(1, true),
+              _c("td", [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-success",
+                    on: {
+                      click: function ($event) {
+                        return _vm.edit(product)
+                      },
+                    },
+                  },
+                  [
+                    _vm._v(
+                      "\n                            Edit\n                        "
+                    ),
+                  ]
+                ),
+                _vm._v(" "),
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-danger",
+                    on: {
+                      click: function ($event) {
+                        return _vm.deleteProduct(product.id)
+                      },
+                    },
+                  },
+                  [
+                    _vm._v(
+                      "\n                            Delete\n                        "
+                    ),
+                  ]
+                ),
+              ]),
             ])
           }),
           0
@@ -28590,16 +28721,6 @@ var staticRenderFns = [
       ]),
     ])
   },
-  function () {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("td", [
-      _c("button", { staticClass: "btn btn-success" }, [_vm._v("Edit")]),
-      _vm._v(" "),
-      _c("button", { staticClass: "btn btn-danger" }, [_vm._v("Delete")]),
-    ])
-  },
 ]
 render._withStripped = true
 
@@ -28623,42 +28744,43 @@ var render = function () {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("div", { staticClass: "row" }, [
+    _c(
+      "div",
+      { staticClass: "col-8 offset-4 d-flex justify-content-between mb-3" },
+      [
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-primary",
+            class: _vm.isEdit ? "" : "disabled",
+            on: { click: _vm.create },
+          },
+          [_vm._v("\n            Create\n        ")]
+        ),
+        _vm._v(" "),
+        _vm._m(0),
+      ]
+    ),
+  ])
 }
 var staticRenderFns = [
   function () {
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "row" }, [
-      _c(
-        "div",
-        { staticClass: "col-8 offset-4 d-flex justify-content-between mb-3" },
-        [
-          _c("button", { staticClass: "btn btn-primary" }, [_vm._v("Create")]),
-          _vm._v(" "),
-          _c("form", [
-            _c("div", { staticClass: "input-group" }, [
-              _c("input", {
-                staticClass: "form-control",
-                attrs: { type: "text" },
-              }),
-              _vm._v(" "),
-              _c("div", { staticClass: "input-group-append" }, [
-                _c(
-                  "button",
-                  { staticClass: "btn btn-primary", attrs: { type: "submit" } },
-                  [
-                    _vm._v(
-                      "\n                        Search\n                    "
-                    ),
-                  ]
-                ),
-              ]),
-            ]),
-          ]),
-        ]
-      ),
+    return _c("form", [
+      _c("div", { staticClass: "input-group" }, [
+        _c("input", { staticClass: "form-control", attrs: { type: "text" } }),
+        _vm._v(" "),
+        _c("div", { staticClass: "input-group-append" }, [
+          _c(
+            "button",
+            { staticClass: "btn btn-primary", attrs: { type: "submit" } },
+            [_vm._v("\n                        Search\n                    ")]
+          ),
+        ]),
+      ]),
     ])
   },
 ]
