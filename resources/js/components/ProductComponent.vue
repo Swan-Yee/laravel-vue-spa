@@ -1,68 +1,58 @@
 <template>
     <div class="container my-5">
         <div class="row">
-            <div class="row">
-                <div class="col-8 offset-4 d-flex justify-content-between">
-                    <button class="btn btn-primary">Create</button>
-                    <form>
-                        <div class="input-group">
-                            <input type="text" class="form-control" />
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-primary">
-                                    Search
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            <SearchComponent />
             <div class="col-4">
-                <div class="card">
-                    <h3 class="card-header">Create</h3>
-                    <div class="card-body">
-                        <form action="">
-                            <div class="form-group">
-                                <label>Name</label>
-                                <input type="text" class="form-control" />
-                            </div>
-                            <div class="form-group">
-                                <label>Price</label>
-                                <input type="number" class="form-control" />
-                            </div>
-                            <div class="mt-4">
-                                <div class="btn btn-primary">Save</div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                <CreateProduct :product="product" @create="create" />
             </div>
             <div class="col-8">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Book</td>
-                            <td>1000</td>
-                            <td>
-                                <button class="btn btn-success">Edit</button>
-                                <button class="btn btn-danger">Delete</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <ProductList :products="products" />
             </div>
         </div>
     </div>
 </template>
 
 <script>
-export default {};
+import SearchComponent from "./SearchComponent.vue";
+import CreateProduct from "./CreateProduct.vue";
+import ProductList from "./ProductList.vue";
+
+export default {
+    name: "ProductComponent",
+    components: {
+        SearchComponent,
+        CreateProduct,
+        ProductList,
+    },
+    data() {
+        return {
+            product: {
+                name: "",
+                price: "",
+            },
+            products: [],
+        };
+    },
+    methods: {
+        view() {
+            axios
+                .get("http://127.0.0.1:8000/api/product")
+                .then((response) => {
+                    this.products = response.data;
+                })
+                .catch((error) => console.error(error));
+        },
+        create() {
+            axios
+                .post("http://127.0.0.1:8000/api/product", this.product)
+                .then((res) => {
+                    this.view();
+                    (this.product.name = ""), (this.product.price = "");
+                });
+        },
+    },
+    created() {
+        this.view();
+    },
+};
 </script>
